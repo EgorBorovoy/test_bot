@@ -164,6 +164,23 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
+app.post('/test-webhook', async (req, res) => {
+  if (req.headers['x-secret'] !== CONFIG.WEBHOOK_SECRET) {
+    res.status(403).send('Forbidden');
+    return;
+  }
+
+  const message = req.body && req.body.message ? req.body.message : 'ping';
+
+  try {
+    await tradingEngine.sendTelegramMessage(`✅ Получен тестовый webhook: ${message}`);
+    res.json({ status: 'ok' });
+  } catch (err) {
+    logger.errorWithStack('Ошибка обработки test-webhook', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
